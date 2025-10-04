@@ -1,0 +1,52 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+
+# 1. Load dataset
+df = pd.read_csv("Chennai_AQI_Dataset.csv")
+
+# 2. Check dataset
+print("Dataset Shape:", df.shape)
+print(df.head())
+
+# 3. Handle missing values
+df = df.dropna()
+
+# 4. Features and Target
+# Ensure 'AQI' column exists
+if "AQI" not in df.columns:
+    raise ValueError("❌ 'AQI' column not found in dataset. Please check the column names.")
+
+# Keep only numeric columns for features
+X = df.drop(columns=["AQI"])
+X = X.select_dtypes(include=[np.number])  # Remove non-numeric like Date, City
+
+y = df["AQI"]
+
+# 5. Split data
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# 6. Train Model
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+# 7. Predictions
+y_pred = model.predict(X_test)
+
+# 8. Evaluation
+print("Mean Squared Error:", mean_squared_error(y_test, y_pred))
+print("R² Score:", r2_score(y_test, y_pred))
+
+# 9. Visualization
+plt.figure(figsize=(8, 5))
+sns.scatterplot(x=y_test, y=y_pred, alpha=0.6, color="blue")
+plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], color="red", linestyle="--")  # reference line
+plt.xlabel("Actual AQI")
+plt.ylabel("Predicted AQI")
+plt.title("Actual vs Predicted AQI")
+plt.show()
